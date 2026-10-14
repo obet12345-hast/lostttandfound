@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Items{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Items</h1>
+  <div class="actions">
+    {% if current_user.has_permission('post_found') %}
+      <a class="btn btn-primary" href="{{ url_for('add_item', kind='found') }}">Post found item</a>
+    {% endif %}
+    {% if current_user.has_permission('report_lost') %}
+      <a class="btn {{ '' if current_user.has_permission('post_found') else 'btn-primary' }}" href="{{ url_for('add_item', kind='lost') }}">Report lost item</a>
+    {% endif %}
+  </div>
+</div>
+
+<form class="filters" method="get" action="{{ url_for('items_list') }}">
+  <div>
+    <label for="q">Search</label>
+    <input id="q" name="q" value="{{ filters.q }}" placeholder="Name, description or location">
+  </div>
+  <div>
+    <label for="kind">Type</label>
+    <select id="kind" name="kind">
+      <option value="">All</option>
+      <option value="found" {{ 'selected' if filters.kind == 'found' }}>Found</option>
+      <option value="lost" {{ 'selected' if filters.kind == 'lost' }}>Lost</option>
+    </select>
+  </div>
+  <div>
+    <label for="category">Category</label>
+    <select id="category" name="category">
+      <option value="">All</option>
+      {% for c in CATEGORIES %}
+        <option value="{{ c }}" {{ 'selected' if filters.category == c }}>{{ c }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="status">Status</label>
+    <select id="status" name="status">
+      <option value="">All</option>
+      {% for s in STATUSES %}
+        <option value="{{ s }}" {{ 'selected' if filters.status == s }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-buttons">
+    <button class="btn btn-primary" type="submit">Search</button>
+    <a class="btn" href="{{ url_for('items_list') }}">Clear</a>
+  </div>
+</form>
+
+{% if items %}
+  <p class="muted small">{{ items|length }} item{{ '' if items|length == 1 else 's' }} shown</p>
+  <div class="tag-grid">
+    {% for item in items %}
+      {% include "_item_tag.html" %}
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="empty">No items match your search. Try fewer filters or a different keyword.</p>
+{% endif %}
+{% endblock %}

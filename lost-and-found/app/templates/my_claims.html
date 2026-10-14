@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}My claims{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>My claims</h1>
+  <a class="btn" href="{{ url_for('items_list', kind='found', status='Found') }}">Browse found items</a>
+</div>
+{% if claims %}
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Item</th><th>Submitted</th><th>My proof</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for claim in claims %}
+      {% set item = get_item(claim.item_id) %}
+      <tr>
+        <td>{{ item.name if item else 'Deleted item' }}</td>
+        <td>{{ claim.date_submitted.strftime('%b %d, %Y') }}</td>
+        <td class="wrap">{{ claim.proof }}</td>
+        <td>
+          <span class="badge badge-{{ claim.status|lower }}">{{ claim.status }}</span>
+          {% if claim.status == 'Approved' and item and item.status == 'Claimed' %}
+            <p class="small muted">Go to the lost and found office to pick it up.</p>
+          {% elif claim.status == 'Approved' and item and item.status == 'Returned' %}
+            <p class="small muted">Returned to you.</p>
+          {% endif %}
+        </td>
+        <td class="row-actions">
+          {% if claim.status == 'Pending' %}
+          <form method="post" action="{{ url_for('withdraw_claim', claim_id=claim.id) }}" onsubmit="return confirm('Withdraw this claim?');">
+            <button class="link-danger" type="submit">Withdraw</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="empty">You have not made any claims. Open a found item and choose Claim this item.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<section class="auth">
+  <div class="auth-card">
+    <h1>Log in</h1>
+    <p class="muted">Report something you lost, or check whether it has been handed in.</p>
+    <form method="post" class="form" novalidate>
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username" required autofocus>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button class="btn btn-primary" type="submit">Log in</button>
+    </form>
+    <p class="muted small">New here? <a href="{{ url_for('register') }}">Create a student account</a></p>
+  </div>
+</section>
+{% endblock %}

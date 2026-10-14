@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% set editing = item is not none %}
+{% block title %}{{ 'Edit item' if editing else 'Add item' }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>
+    {% if editing %}Edit {{ item.name }}
+    {% elif kind == 'found' %}Post a found item
+    {% else %}Report a lost item{% endif %}
+  </h1>
+</div>
+
+<form method="post" class="form form-card" novalidate>
+  {% if not editing %}
+    {% if kinds|length > 1 %}
+      <label for="kind">Type</label>
+      <select id="kind" name="kind">
+        <option value="found" {{ 'selected' if kind == 'found' }}>Found item</option>
+        <option value="lost" {{ 'selected' if kind == 'lost' }}>Lost item</option>
+      </select>
+    {% else %}
+      <input type="hidden" name="kind" value="{{ kind }}">
+    {% endif %}
+  {% endif %}
+
+  <label for="name">Item name</label>
+  <input id="name" name="name" maxlength="80" required
+         value="{{ form.get('name') if form else (item.name if editing else '') }}">
+
+  <label for="category">Category</label>
+  {% set chosen_category = form.get('category') if form else (item.category if editing else '') %}
+  <select id="category" name="category" required>
+    <option value="">Choose a category</option>
+    {% for c in CATEGORIES %}
+      <option value="{{ c }}" {{ 'selected' if chosen_category == c }}>{{ c }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="description">Description</label>
+  <textarea id="description" name="description" rows="4" maxlength="500" required>{{ form.get('description') if form else (item.description if editing else '') }}</textarea>
+  <p class="hint">Colour, brand, marks. Do not post anything that makes the owner easy to impersonate, like an ID number.</p>
+
+  <label for="location">{{ 'Last seen at' if kind == 'lost' else 'Found at' }}</label>
+  <input id="location" name="location" maxlength="100" required
+         value="{{ form.get('location') if form else (item.location if editing else '') }}">
+
+  <label for="date_reported">Date</label>
+  <input id="date_reported" name="date_reported" type="date" required max="{{ today }}"
+         value="{{ form.get('date_reported') if form else (item.date_reported.isoformat() if editing else '') }}">
+
+  {% if editing and current_user.has_permission('update_status') %}
+    {% set chosen_status = form.get('status') if form else item.status %}
+    <label for="status">Status</label>
+    <select id="status" name="status">
+      {% for s in STATUSES %}
+        <option value="{{ s }}" {{ 'selected' if chosen_status == s }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  {% endif %}
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{{ 'Save changes' if editing else 'Save item' }}</button>
+    <a class="btn" href="{{ url_for('items_list') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

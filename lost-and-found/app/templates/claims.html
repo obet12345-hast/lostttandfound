@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Claims{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Claims</h1>
+  <div class="segmented" role="group" aria-label="Filter claims">
+    <a class="{{ 'on' if not status }}" href="{{ url_for('manage_claims') }}">All</a>
+    <a class="{{ 'on' if status == 'Pending' }}" href="{{ url_for('manage_claims', status='Pending') }}">Pending</a>
+    <a class="{{ 'on' if status == 'Approved' }}" href="{{ url_for('manage_claims', status='Approved') }}">Approved</a>
+    <a class="{{ 'on' if status == 'Rejected' }}" href="{{ url_for('manage_claims', status='Rejected') }}">Rejected</a>
+  </div>
+</div>
+{% if claims %}
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Item</th><th>Claimant</th><th>Proof of ownership</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for claim in claims %}
+      {% set item = get_item(claim.item_id) %}
+      <tr>
+        <td>{{ item.name if item else 'Deleted item' }}</td>
+        <td>{{ user_name(claim.claimant_id) }}</td>
+        <td class="wrap">{{ claim.proof }}</td>
+        <td>{{ claim.date_submitted.strftime('%b %d, %Y') }}</td>
+        <td>
+          <span class="badge badge-{{ claim.status|lower }}">{{ claim.status }}</span>
+          {% if claim.reviewed_by %}<p class="small muted">by {{ user_name(claim.reviewed_by) }}</p>{% endif %}
+        </td>
+        <td class="row-actions">
+          {% if claim.status == 'Pending' %}
+            <form method="post" action="{{ url_for('review_claim', claim_id=claim.id, action='approve') }}">
+              <button class="btn btn-small btn-primary" type="submit">Approve</button>
+            </form>
+            <form method="post" action="{{ url_for('review_claim', claim_id=claim.id, action='reject') }}">
+              <button class="btn btn-small" type="submit">Reject</button>
+            </form>
+          {% endif %}
+          {% if current_user.has_permission('delete_claims') %}
+            <form method="post" action="{{ url_for('delete_claim', claim_id=claim.id) }}" onsubmit="return confirm('Delete this claim?');">
+              <button class="link-danger" type="submit">Delete</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="empty">No claims match this filter.</p>
+{% endif %}
+{% endblock %}

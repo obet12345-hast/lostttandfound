@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Lost &amp; Found{% endblock %} | Lost &amp; Found Desk</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('home') }}">
+      <span class="brand-hole" aria-hidden="true"></span>
+      Lost &amp; Found Desk
+    </a>
+    {% if current_user %}
+    <nav class="nav" aria-label="Main">
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('items_list') }}">Items</a>
+      {% if current_user.has_permission('submit_claim') %}
+        <a href="{{ url_for('my_claims') }}">My claims</a>
+      {% endif %}
+      {% if current_user.has_permission('review_claims') %}
+        <a href="{{ url_for('manage_claims') }}">Claims</a>
+      {% endif %}
+      {% if current_user.has_permission('manage_users') %}
+        <a href="{{ url_for('users_list') }}">Users</a>
+      {% endif %}
+    </nav>
+    <div class="account">
+      <span class="who">{{ current_user.full_name }}
+        <span class="role role-{{ current_user.role }}">{{ current_user.role_label }}</span></span>
+      <form method="post" action="{{ url_for('logout') }}">
+        <button class="btn btn-quiet" type="submit">Log out</button>
+      </form>
+    </div>
+    {% endif %}
+  </header>
+
+  <main class="page">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes" role="status">
+          {% for category, message in messages %}
+            <p class="flash flash-{{ category }}">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    Lost &amp; Found Desk. Items are stored in memory and reset when the server restarts.
+  </footer>
+</body>
+</html>

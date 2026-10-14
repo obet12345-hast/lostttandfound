@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Staff dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Staff dashboard</h1>
+  <div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('add_item') }}">Post found item</a>
+    <a class="btn" href="{{ url_for('items_list') }}">All items</a>
+  </div>
+</div>
+
+<section class="stats">
+  <div class="stat stat-alert"><span class="stat-num">{{ data.pending_claims|length }}</span><span>Claims to review</span></div>
+  <div class="stat"><span class="stat-num">{{ data.awaiting_return|length }}</span><span>Waiting for pickup</span></div>
+  <div class="stat"><span class="stat-num">{{ data.found_count }}</span><span>Found, unclaimed</span></div>
+  <div class="stat"><span class="stat-num">{{ data.lost_count }}</span><span>Reported lost</span></div>
+</section>
+
+<section class="panel">
+  <h2>Claims to review</h2>
+  {% if data.pending_claims %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Item</th><th>Claimant</th><th>Proof of ownership</th><th></th></tr></thead>
+      <tbody>
+        {% for claim in data.pending_claims %}
+        <tr>
+          <td>{{ get_item(claim.item_id).name if get_item(claim.item_id) else 'Deleted item' }}</td>
+          <td>{{ user_name(claim.claimant_id) }}</td>
+          <td class="wrap">{{ claim.proof }}</td>
+          <td class="row-actions">
+            <form method="post" action="{{ url_for('review_claim', claim_id=claim.id, action='approve') }}">
+              <button class="btn btn-small btn-primary" type="submit">Approve</button>
+            </form>
+            <form method="post" action="{{ url_for('review_claim', claim_id=claim.id, action='reject') }}">
+              <button class="btn btn-small" type="submit">Reject</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty">No claims are waiting for review.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Approved and waiting for pickup</h2>
+  {% if data.awaiting_return %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Item</th><th>Category</th><th></th></tr></thead>
+      <tbody>
+        {% for item in data.awaiting_return %}
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.category }}</td>
+          <td class="row-actions">
+            <form method="post" action="{{ url_for('mark_returned', item_id=item.id) }}">
+              <button class="btn btn-small btn-primary" type="submit">Mark as returned</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty">Nothing is waiting to be handed back.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Recently posted found items</h2>
+  {% if data.recent_found %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Item</th><th>Location</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for item in data.recent_found %}
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.location }}</td>
+          <td><span class="badge badge-{{ item.status|lower }}">{{ item.status }}</span></td>
+          <td class="row-actions"><a href="{{ url_for('edit_item', item_id=item.id) }}">Update</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty">You have not posted any found items yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

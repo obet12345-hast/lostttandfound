@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Admin dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Admin dashboard</h1>
+  <div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('add_user') }}">Add user</a>
+    <a class="btn" href="{{ url_for('add_item', kind='found') }}">Post found item</a>
+    <a class="btn" href="{{ url_for('add_item', kind='lost') }}">Report lost item</a>
+  </div>
+</div>
+
+<section class="stats">
+  <div class="stat"><span class="stat-num">{{ data.total_users }}</span><span>Users</span></div>
+  <div class="stat"><span class="stat-num">{{ data.total_items }}</span><span>Items</span></div>
+  <div class="stat"><span class="stat-num">{{ data.total_claims }}</span><span>Claims</span></div>
+  <div class="stat stat-alert"><span class="stat-num">{{ data.pending_claims }}</span><span>Pending claims</span></div>
+</section>
+
+<div class="two-col">
+  <section class="panel">
+    <h2>Items by status</h2>
+    <table class="table compact">
+      <tbody>
+        {% for status, count in data.status_counts.items() %}
+        <tr>
+          <td><span class="badge badge-{{ status|lower }}">{{ status }}</span></td>
+          <td class="num">{{ count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  <section class="panel">
+    <h2>Users by role</h2>
+    <table class="table compact">
+      <tbody>
+        {% for role, cls in ROLES.items() %}
+        <tr><td>{{ cls.role_label }}</td><td class="num">{{ data.users_by_role.get(role, 0) }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p><a href="{{ url_for('users_list') }}">Manage users</a></p>
+  </section>
+</div>
+
+<section class="panel">
+  <h2>Latest items</h2>
+  {% if data.recent_items %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Item</th><th>Type</th><th>Status</th><th>Reported by</th><th></th></tr></thead>
+      <tbody>
+        {% for item in data.recent_items %}
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.kind_label }}</td>
+          <td><span class="badge badge-{{ item.status|lower }}">{{ item.status }}</span></td>
+          <td>{{ user_name(item.reported_by) }}</td>
+          <td class="row-actions">
+            <a href="{{ url_for('edit_item', item_id=item.id) }}">Edit</a>
+            <form method="post" action="{{ url_for('delete_item', item_id=item.id) }}" onsubmit="return confirm('Delete this item and its claims?');">
+              <button class="link-danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty">No items yet. Post a found item to get started.</p>
+  {% endif %}
+  <p><a href="{{ url_for('items_list') }}">See all items</a></p>
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% set editing = user is not none %}
+{% block title %}{{ 'Edit user' if editing else 'Add user' }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ 'Edit ' ~ user.full_name if editing else 'Add a user' }}</h1></div>
+<form method="post" class="form form-card" novalidate>
+  <label for="full_name">Full name</label>
+  <input id="full_name" name="full_name" maxlength="50" required
+         value="{{ form.get('full_name') if form else (user.full_name if editing else '') }}">
+
+  <label for="username">Username</label>
+  <input id="username" name="username" maxlength="20" required
+         value="{{ form.get('username') if form else (user.username if editing else '') }}">
+
+  {% set chosen_role = form.get('role') if form else (user.role if editing else 'student') %}
+  <label for="role">Role</label>
+  <select id="role" name="role" {{ 'disabled' if editing and user.id == current_user.id }}>
+    {% for key, cls in ROLES.items() %}
+      <option value="{{ key }}" {{ 'selected' if chosen_role == key }}>{{ cls.role_label }}</option>
+    {% endfor %}
+  </select>
+  {% if editing and user.id == current_user.id %}
+    <input type="hidden" name="role" value="{{ user.role }}">
+    <p class="hint">You cannot change your own role.</p>
+  {% endif %}
+
+  <label for="password">{{ 'New password' if editing else 'Password' }}</label>
+  <input id="password" name="password" type="password" autocomplete="new-password" {{ '' if editing else 'required' }}>
+  <p class="hint">{{ 'Leave blank to keep the current password. Required when changing the role.' if editing else 'At least 6 characters.' }}</p>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{{ 'Save changes' if editing else 'Create user' }}</button>
+    <a class="btn" href="{{ url_for('users_list') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

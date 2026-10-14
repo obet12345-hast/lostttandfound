@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Create account{% endblock %}
+{% block content %}
+<section class="auth">
+  <div class="auth-card">
+    <h1>Create a student account</h1>
+    <p class="muted">Staff and admin accounts are created by an administrator.</p>
+    <form method="post" class="form" novalidate>
+      <label for="full_name">Full name</label>
+      <input id="full_name" name="full_name" value="{{ form.get('full_name', '') }}" required>
+      <label for="username">Username</label>
+      <input id="username" name="username" value="{{ form.get('username', '') }}" autocomplete="username" required>
+      <p class="hint">3 to 20 letters, numbers or underscores.</p>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="new-password" required>
+      <p class="hint">At least 6 characters.</p>
+      <label for="confirm_password">Confirm password</label>
+      <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required>
+      <button class="btn btn-primary" type="submit">Create account</button>
+    </form>
+    <p class="muted small">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+  </div>
+</section>
+{% endblock %}

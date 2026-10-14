@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Claim item{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Claim this item</h1></div>
+
+<div class="two-col wide-left">
+  <form method="post" class="form form-card" novalidate>
+    <label for="proof">How can you prove it is yours?</label>
+    <textarea id="proof" name="proof" rows="6" maxlength="500" required>{{ form.get('proof', '') }}</textarea>
+    <p class="hint">Describe something only the owner would know: contents, marks, serial number, when and where you lost it.</p>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Submit claim</button>
+      <a class="btn" href="{{ url_for('items_list') }}">Cancel</a>
+    </div>
+  </form>
+  <aside class="panel">
+    {% set tag_item = item %}
+    <h2>{{ item.name }}</h2>
+    <p>{{ item.description }}</p>
+    <p class="muted small">{{ item.describe() }}</p>
+  </aside>
+</div>
+{% endblock %}

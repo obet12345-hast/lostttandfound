@@ -1,0 +1,36 @@
+<article class="tag tag-{{ item.status|lower }}">
+  <div class="tag-head">
+    <span class="kind kind-{{ item.kind }}">{{ item.kind_label }}</span>
+    <span class="stamp stamp-{{ item.status|lower }}">{{ item.status }}</span>
+  </div>
+  <h3>{{ item.name }}</h3>
+  <p class="tag-desc">{{ item.description }}</p>
+  <dl class="tag-facts">
+    <dt>{{ item.location_label }}</dt><dd>{{ item.location }}</dd>
+    <dt>Date</dt><dd>{{ item.date_reported.strftime('%b %d, %Y') }}</dd>
+    <dt>Category</dt><dd>{{ item.category }}</dd>
+    <dt>Posted by</dt><dd>{{ user_name(item.reported_by) }}</dd>
+  </dl>
+  <div class="tag-actions">
+    {% if current_user.has_permission('submit_claim') and item.kind == 'found' and item.status == 'Found' %}
+      {% if has_pending_claim(item.id, current_user.id) %}
+        <span class="muted small">Claim pending</span>
+      {% else %}
+        <a class="btn btn-small btn-primary" href="{{ url_for('claim_item', item_id=item.id) }}">Claim this item</a>
+      {% endif %}
+    {% endif %}
+    {% if item.status == 'Claimed' and current_user.has_permission('update_status') %}
+      <form method="post" action="{{ url_for('mark_returned', item_id=item.id) }}">
+        <button class="btn btn-small btn-primary" type="submit">Mark as returned</button>
+      </form>
+    {% endif %}
+    {% if can_edit_item(current_user, item) %}
+      <a class="btn btn-small" href="{{ url_for('edit_item', item_id=item.id) }}">Edit</a>
+    {% endif %}
+    {% if can_delete_item(current_user, item) %}
+      <form method="post" action="{{ url_for('delete_item', item_id=item.id) }}" onsubmit="return confirm('Delete this item and its claims?');">
+        <button class="btn btn-small btn-danger" type="submit">Delete</button>
+      </form>
+    {% endif %}
+  </div>
+</article>

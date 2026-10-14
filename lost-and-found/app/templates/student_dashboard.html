@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}My dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Hello, {{ current_user.full_name }}</h1>
+  <div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('add_item') }}">Report a lost item</a>
+    <a class="btn" href="{{ url_for('items_list', kind='found', status='Found') }}">Browse found items</a>
+  </div>
+</div>
+
+<section class="stats">
+  <div class="stat"><span class="stat-num">{{ data.available_found }}</span><span>Found items to browse</span></div>
+  <div class="stat"><span class="stat-num">{{ data.my_items|length }}</span><span>My reports</span></div>
+  <div class="stat"><span class="stat-num">{{ data.pending_claims }}</span><span>Claims pending</span></div>
+  <div class="stat"><span class="stat-num">{{ data.approved_claims }}</span><span>Claims approved</span></div>
+</section>
+
+<section class="panel">
+  <h2>My reports</h2>
+  {% if data.my_items %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Item</th><th>Location</th><th>Date</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for item in data.my_items %}
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.location }}</td>
+          <td>{{ item.date_reported.strftime('%b %d, %Y') }}</td>
+          <td><span class="badge badge-{{ item.status|lower }}">{{ item.status }}</span></td>
+          <td class="row-actions">
+            <a href="{{ url_for('edit_item', item_id=item.id) }}">Edit</a>
+            <form method="post" action="{{ url_for('delete_item', item_id=item.id) }}" onsubmit="return confirm('Delete this report?');">
+              <button class="link-danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty">You have not reported anything lost. If something goes missing, report it here.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>My claims</h2>
+  {% if data.my_claims %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Item</th><th>Submitted</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for claim in data.my_claims[:5] %}
+        <tr>
+          <td>{{ get_item(claim.item_id).name if get_item(claim.item_id) else 'Deleted item' }}</td>
+          <td>{{ claim.date_submitted.strftime('%b %d, %Y') }}</td>
+          <td><span class="badge badge-{{ claim.status|lower }}">{{ claim.status }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p><a href="{{ url_for('my_claims') }}">See all my claims</a></p>
+  {% else %}
+  <p class="empty">You have not claimed anything. Open a found item and choose Claim this item.</p>
+  {% endif %}
+</section>
+{% endblock %}
